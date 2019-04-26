@@ -1,0 +1,20 @@
+// media
+=w768
+  @media screen and (max-width: 768px)
+    @content;
+
+=w420
+  @media screen and (max-width: 420px)
+    @content;
+
+=w375
+  @media screen and (max-width: 375px)
+    @content;
+
+//colors
+$dark: #313131;
+$light: #f1f3f4;
+
+//functions
+@function rem($px) 
+  @return $px / 16px + 0rem

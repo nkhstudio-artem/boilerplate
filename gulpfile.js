@@ -1,7 +1,9 @@
 "use strict";
 
-const { name } = require("./package.json"),
-  { watch, series, parallel, src, dest } = require("gulp"),
+const {
+  name
+} = require("./package.json"),
+  gulp = require("gulp"),
   del = require("del"),
   path = require("path"),
   pug = require("gulp-pug"),
@@ -28,7 +30,7 @@ const paths = {
     src: "src/pages/*.pug",
     templates: "src/assets/templates/*.pug",
     include: "src/assets/blocks/**/*.pug",
-    dist: "dist/pages"
+    dist: "dist"
   },
 
   styles: {
@@ -76,7 +78,7 @@ const paths = {
 };
 
 const markdowns = () => {
-  return src(paths.markdowns.src)
+  return gulp.src(paths.markdowns.src)
     .pipe(plumber())
     .pipe(gulpif(global.watch, emitty.stream()))
     .pipe(
@@ -84,7 +86,7 @@ const markdowns = () => {
         pretty: true
       })
     )
-    .pipe(dest(paths.markdowns.dist))
+    .pipe(gulp.dest(paths.markdowns.dist))
     .pipe(connect.reload());
 };
 
@@ -95,12 +97,14 @@ const styles = () => {
       cascade: false,
     }),
     cssnano({
-      discardComments: { removeAll: true },
+      discardComments: {
+        removeAll: true
+      },
       normalizeWhitespace: true
     })
   ];
 
-  return src(paths.styles.src)
+  return gulp.src(paths.styles.src)
     .pipe(plumber())
     .pipe(
       sass({
@@ -109,12 +113,12 @@ const styles = () => {
       })
     )
     .pipe(postcss(plugins))
-    .pipe(dest(paths.styles.dist))
+    .pipe(gulp.dest(paths.styles.dist))
     .pipe(connect.reload());
 };
 
 const scripts = () => {
-  return src(paths.scripts.src)
+  return gulp.src(paths.scripts.src)
     .pipe(plumber())
     .pipe(
       include({
@@ -131,51 +135,61 @@ const scripts = () => {
         presets: ["@babel/env"]
       })
     )
-    .pipe(dest(paths.scripts.dist))
+    .pipe(gulp.dest(paths.scripts.dist))
     .pipe(connect.reload());
 };
 
 const scriptsPlugins = () => {
-  return src(paths.scriptsPlugins.src)
-    .pipe(dest(paths.scriptsPlugins.dist))
+  return gulp.src(paths.scriptsPlugins.src)
+    .pipe(gulp.dest(paths.scriptsPlugins.dist))
     .pipe(connect.reload());
 };
 
 const scriptsLibraries = () => {
-  return src(paths.scriptsLibraries.src)
-    .pipe(dest(paths.scriptsLibraries.dist))
+  return gulp.src(paths.scriptsLibraries.src)
+    .pipe(gulp.dest(paths.scriptsLibraries.dist))
     .pipe(connect.reload());
 };
 
 const images = () => {
-  return src(paths.images.src)
+  return gulp.src(paths.images.src)
     .pipe(
       imagemin([
-        imagemin.gifsicle({ interlaced: true }),
-        imagemin.jpegtran({ progressive: true }),
-        imagemin.optipng({ optimizationLevel: 2 })
+        imagemin.gifsicle({
+          interlaced: true
+        }),
+        imagemin.jpegtran({
+          progressive: true
+        }),
+        imagemin.optipng({
+          optimizationLevel: 2
+        })
       ])
     )
-    .pipe(dest(paths.images.dist))
+    .pipe(gulp.dest(paths.images.dist))
     .pipe(connect.reload());
 };
 
 const icons = () => {
-  return src(paths.icons.src)
+  return gulp.src(paths.icons.src)
     .pipe(
       imagemin([
         imagemin.svgo({
-          plugins: [{ removeViewBox: true }, { cleanupIDs: false }]
+          plugins: [{
+            removeViewBox: true
+          }, {
+            cleanupIDs: false
+          }]
         })
       ])
     )
-    .pipe(dest(paths.icons.dist))
+    .pipe(gulp.dest(paths.icons.dist))
     .pipe(connect.reload());
 };
 
 const fonts = () => {
-  return src(paths.fonts.src)
-    .pipe(dest(paths.fonts.dist))
+  return gulp.src(paths.fonts.src)
+    .pipe(gulp.dest(paths.fonts.dist))
     .pipe(connect.reload());
 };
 
@@ -190,16 +204,16 @@ const server = () => {
 const watching = () => {
   global.watch = true;
 
-  watch([paths.markdowns.src, paths.markdowns.templates, paths.markdowns.include], markdowns);
-  watch([paths.styles.src, paths.styles.include, paths.styles.fonts], styles);
-  watch([paths.scripts.src, paths.scripts.include], scripts);
-  watch(paths.scriptsPlugins.src, scriptsPlugins);
-  watch(paths.scriptsLibraries.src, scriptsLibraries);
-  watch(paths.images.src, images);
-  watch(paths.icons.src, icons);
-  watch(paths.fonts.src, fonts);
+  gulp.watch([paths.markdowns.src, paths.markdowns.templates, paths.markdowns.include], markdowns);
+  gulp.watch([paths.styles.src, paths.styles.include, paths.styles.fonts], styles);
+  gulp.watch([paths.scripts.src, paths.scripts.include], scripts);
+  gulp.watch(paths.scriptsPlugins.src, scriptsPlugins);
+  gulp.watch(paths.scriptsLibraries.src, scriptsLibraries);
+  gulp.watch(paths.images.src, images);
+  gulp.watch(paths.icons.src, icons);
+  gulp.watch(paths.fonts.src, fonts);
 
-  watch([
+  gulp.watch([
     paths.scripts.src,
     paths.scripts.include,
     paths.scriptsPlugins.src,
@@ -230,6 +244,5 @@ const watching = () => {
     del.sync([dest]);
   });
 };
-
-exports.default = parallel(server, watching);
-exports.build = series(markdowns, styles, scripts, scriptsPlugins, scriptsLibraries, images, icons, fonts);
+gulp.task('default', gulp.parallel(server, watching))
+gulp.task('build', gulp.series(markdowns, styles, scripts, scriptsPlugins, scriptsLibraries, images, icons, fonts))
